@@ -1,0 +1,81 @@
+# =================================================================
+# 通用忽略规则 (适用于所有操作系统和开发环境)
+# =================================================================
+
+# 操作系统生成的文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器和IDE的配置文件
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 日志文件
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+# =================================================================
+# Node.js 后端/前端 项目特定规则
+# =================================================================
+
+# 依赖文件夹 (非常重要，必须忽略)
+node_modules/
+
+# 环境变量文件 (包含敏感信息，如数据库密码、API密钥等)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 前端构建产物 (这些文件是自动生成的，不应纳入版本控制)
+/build
+/dist
+.next/
+.nuxt/
+.out/
+
+# 缓存文件
+.npm/
+.yarn/cache
+.pnp.*
+
+
+# =================================================================
+# AI 模型和数据特定规则
+# =================================================================
+
+# 大型数据集 (建议使用 Git LFS 或其他方式管理)
+# 如果你的数据集不大，可以从这里移除
+*.csv
+*.zip
+*.gz
+/ai_models/face_recognition/data/
+/ai_models/pavement_detection/data/
+/ai_models/traffic_analysis/data/
+
+# 训练好的模型文件 (通常很大，不适合放在Git仓库)
+*.h5
+*.hdf5
+*.pth
+*.pt
+*.pb
+*.onnx
+/ai_models/face_recognition/saved_models/
+/ai_models/pavement_detection/saved_models/
+
+# Python 缓存和虚拟环境
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+
