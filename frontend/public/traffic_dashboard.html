@@ -4,101 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>城市交通时空特征可视化大屏</title>
-    <!-- 引入Tailwind CSS以快速构建美观的布局 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入ECharts图表库 -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <style>
-        /* 自定义样式，美化滚动条和背景 */
-        body {
-            background-color: #020d24; /* 深蓝色背景 */
-            color: #c0c0c0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        body { background-color: #020d24; color: #c0c0c0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        .card { background-color: rgba(10, 25, 47, 0.8); border: 1px solid #1e3a5f; backdrop-filter: blur(5px); border-radius: 0.5rem; padding: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        .main-title { font-size: 2.5rem; font-weight: bold; color: #ffffff; text-shadow: 0 0 10px #00aaff, 0 0 20px #00aaff; text-align: center; padding: 1rem 0; }
+        #map-container { width: 100%; height: 100%; border-radius: 0.5rem; }
+        .chart-container { width: 100%; height: 250px; }
+        .btn { background-color: #007bff; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; border: none; cursor: pointer; transition: background-color 0.3s; }
+        .btn:hover { background-color: #0056b3; }
+        .btn-secondary { background-color: #4a5568; }
+        .btn-secondary:hover { background-color: #2d3748; }
+        .input-field { background-color: #1a202c; border: 1px solid #2d3748; color: white; border-radius: 0.375rem; padding: 0.5rem; width: 100%; }
+        .input-field:focus { outline: none; border-color: #4299e1; }
+        /* 强制修正高德输入提示框的样式 */
+        .amap-sug-result {
+            background-color: #1a202c !important; border: 1px solid #4299e1 !important;
+            color: #c0c0c0 !important; z-index: 9999 !important;
         }
-        /* 卡片样式 */
-        .card {
-            background-color: rgba(10, 25, 47, 0.8);
-            border: 1px solid #1e3a5f;
-            backdrop-filter: blur(5px);
-            border-radius: 0.5rem;
-            padding: 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .amap-sug-result .sug-item {
+            color: #c0c0c0 !important; border-bottom: 1px solid #2d3748 !important;
         }
-        /* 大屏标题样式 */
-        .main-title {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #ffffff;
-            text-shadow: 0 0 10px #00aaff, 0 0 20px #00aaff;
-            text-align: center;
-            padding: 1rem 0;
-        }
-        /* 地图容器样式 */
-        #map-container {
-            width: 100%;
-            height: 100%;
-            border-radius: 0.5rem;
-        }
-        /* ECharts图表容器 */
-        .chart-container {
-            width: 100%;
-            height: 250px; /* 固定高度 */
-        }
-        /* 自定义复选框样式 */
-        .custom-checkbox-label {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            background-color: #1a202c;
-            padding: 0.5rem 0.75rem;
-            border-radius: 0.375rem;
-            border: 1px solid #2d3748;
-            transition: all 0.2s ease-in-out;
-        }
-        .custom-checkbox-label:hover {
-            border-color: #4299e1;
-        }
-        .custom-checkbox {
-            appearance: none;
-            width: 1.25rem;
-            height: 1.25rem;
-            border: 2px solid #4a5568;
-            border-radius: 0.25rem;
-            margin-right: 0.5rem;
-            position: relative;
-            top: 2px;
-        }
-        .custom-checkbox:checked {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-        .custom-checkbox:checked::after {
-            content: '✔';
-            color: white;
-            font-size: 0.8rem;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-        }
-        /* 按钮样式 */
-        .btn {
-            background-color: #007bff;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .btn:hover {
-            background-color: #0056b3;
-        }
-        .btn-secondary {
-            background-color: #4a5568;
-        }
-        .btn-secondary:hover {
-            background-color: #2d3748;
+        .amap-sug-result .sug-item:hover, .amap-sug-result .sug-item.selected {
+            background-color: #2d3748 !important;
         }
     </style>
 </head>
@@ -106,23 +35,31 @@
     <h1 class="main-title">城市交通时空特征可视化大屏</h1>
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-4 h-[calc(100vh-120px)]">
         
-        <!-- 左侧栏 -->
         <div class="lg:col-span-1 flex flex-col gap-4">
             <div class="card">
-                <h2 class="text-xl font-bold text-white mb-2">控制面板</h2>
+                <h2 class="text-xl font-bold text-white mb-2">功能面板</h2>
                 <div class="flex flex-col gap-4">
                     <button id="toggle-traffic-layer" class="btn">显示/隐藏实时路况</button>
-                    
-                    <!-- 更新: 热力图叠加分析模块 -->
-                    <div>
-                        <h3 class="text-lg font-semibold text-white mb-2">热力图叠加分析:</h3>
-                        <div id="heatmap-options" class="grid grid-cols-2 gap-2">
-                            <!-- 复选框将由JS动态生成 -->
-                        </div>
-                    </div>
-                    
-                    <button id="draw-trajectory" class="btn btn-secondary">绘制模拟轨迹</button>
+                    <button id="toggle-monitoring-areas" class="btn btn-secondary">显示/隐藏监控区域</button>
                     <button id="clear-all" class="btn btn-secondary">清除所有覆盖物</button>
+                </div>
+            </div>
+            <div class="card">
+                <h2 class="text-xl font-bold text-white mb-2">车辆轨迹模拟</h2>
+                <div class="flex flex-col gap-3">
+                    <div>
+                        <label class="text-sm font-medium">起点</label>
+                        <input type="text" id="start-point-input" class="input-field mt-1" placeholder="搜索并选择起点">
+                    </div>
+                    <div id="waypoints-container"></div>
+                    <div>
+                        <label class="text-sm font-medium">终点</label>
+                        <input type="text" id="end-point-input" class="input-field mt-1" placeholder="搜索并选择终点">
+                    </div>
+                    <div class="flex justify-between gap-2">
+                         <button id="add-waypoint-btn" class="btn btn-secondary flex-grow">添加途经点</button>
+                         <button id="plan-route-btn" class="btn flex-grow">规划路线</button>
+                    </div>
                 </div>
             </div>
             <div class="card flex-grow">
@@ -131,7 +68,6 @@
             </div>
         </div>
 
-        <!-- 中间地图 -->
         <div class="lg:col-span-3 card p-2">
             <div id="map-container"></div>
         </div>
@@ -140,32 +76,48 @@
 
     <script>
         // --- 全局变量 ---
-        const backendUrl = 'http://localhost:5001'; // 你的后端地址
+        const backendUrl = 'http://localhost:5001';
         let map;
         let trafficLayer;
-        let trajectoryLine;
         let isTrafficLayerVisible = false;
+        
+        const monitoringAreaOverlays = [];
+        let areMonitoringAreasVisible = false;
 
-        const heatmapLayers = {}; 
+        let routeOverlays = [];
+        const routeLocations = { start: null, end: null, waypoints: [] };
+        let waypointCounter = 0;
 
-        const poiCategories = [
-            { name: '购物', keyword: '商场|购物中心|超市' },
-            { name: '教育', keyword: '大学|中学|小学' },
-            { name: '医疗', keyword: '医院|诊所' },
-            { name: '交通', keyword: '地铁站|公交站' },
-            { name: '餐饮', keyword: '餐厅|饭店|美食' },
-            { name: '公司', keyword: '公司|企业|科技园' }
-        ];
+        const TARGET_DISTRICTS = ['东城区', '西城区', '朝阳区', '海淀区', '丰台区', '通州区', '顺义区'];
+        const DISTRICT_COLORS = ['#FF33FF', '#33A1FF', '#33FF66', '#FFFF33', '#FF6633', '#33FFFF', '#FF3366'];
 
         // --- 地图初始化 ---
         function initMap() {
             map = new AMap.Map('map-container', {
-                zoom: 12, center: [116.397428, 39.90923],
+                zoom: 10, center: [116.407428, 39.90423],
                 viewMode: '3D', mapStyle: 'amap://styles/darkblue',
             });
-            trafficLayer = new AMap.TileLayer.Traffic({ zIndex: 10, autoRefresh: true });
-            map.add(trafficLayer);
-            trafficLayer.hide();
+
+            // 在地图加载完成后，再通过 AMap.plugin 加载所有需要的插件
+            map.on('complete', function(){
+                console.log("地图已完全加载。");
+                AMap.plugin([
+                    'AMap.Traffic',
+                    'AMap.Polygon',
+                    'AMap.Polyline',
+                    'AMap.Marker',
+                    'AMap.InfoWindow',
+                    'AMap.AutoComplete'
+                ], function(){
+                    console.log("所有插件已加载完成。");
+                    // 初始化所有依赖插件的功能
+                    trafficLayer = new AMap.Traffic({ zIndex: 10, autoRefresh: true });
+                    map.add(trafficLayer);
+                    trafficLayer.hide();
+                    
+                    setupAutocomplete();
+                });
+            });
         }
 
         // --- ECharts图表初始化 ---
@@ -173,203 +125,226 @@
             const weeklyFlowChart = echarts.init(document.getElementById('weekly-flow-chart'));
             const option = {
                 tooltip: { trigger: 'axis' },
-                xAxis: {
-                    type: 'category',
-                    data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
-                    axisLine: { lineStyle: { color: '#8392A2' } },
-                },
-                yAxis: {
-                    type: 'value',
-                    name: '客流量 (万人次)',
-                    axisLine: { lineStyle: { color: '#8392A2' } },
-                    splitLine: { lineStyle: { color: 'rgba(131, 146, 162, 0.2)' } },
-                },
+                xAxis: { type: 'category', data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'], axisLine: { lineStyle: { color: '#8392A2' } } },
+                yAxis: { type: 'value', name: '客流量 (万人次)', axisLine: { lineStyle: { color: '#8392A2' } }, splitLine: { lineStyle: { color: 'rgba(131, 146, 162, 0.2)' } } },
                 series: [{
-                    data: [120, 132, 101, 134, 150, 230, 210],
-                    type: 'line',
-                    smooth: true,
-                    itemStyle: { color: '#00aaff' },
-                    areaStyle: {
-                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
-                            offset: 0,
-                            color: 'rgba(0, 170, 255, 0.5)'
-                        }, {
-                            offset: 1,
-                            color: 'rgba(0, 170, 255, 0)'
-                        }])
-                    }
+                    data: [120, 132, 101, 134, 150, 230, 210], type: 'line', smooth: true, itemStyle: { color: '#00aaff' },
+                    areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(0, 170, 255, 0.5)' }, { offset: 1, color: 'rgba(0, 170, 255, 0)' }]) }
                 }],
                 grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true }
             };
             weeklyFlowChart.setOption(option);
         }
-
-        // --- 动态生成热力图选项 ---
-        function initHeatmapOptions() {
-            const container = document.getElementById('heatmap-options');
-            poiCategories.forEach(category => {
-                const label = document.createElement('label');
-                label.className = 'custom-checkbox-label';
-                
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.className = 'custom-checkbox';
-                checkbox.dataset.keyword = category.keyword;
-                checkbox.dataset.name = category.name;
-                checkbox.addEventListener('change', handleHeatmapToggle);
-
-                const text = document.createElement('span');
-                text.textContent = category.name;
-
-                label.appendChild(checkbox);
-                label.appendChild(text);
-                container.appendChild(label);
-            });
-        }
-
+        
         // --- 功能函数 ---
 
         function toggleTrafficLayer() {
+            if (!trafficLayer) return; // 插件未加载好则不执行
             if (isTrafficLayerVisible) trafficLayer.hide();
             else trafficLayer.show();
             isTrafficLayerVisible = !isTrafficLayerVisible;
         }
 
-        async function handleHeatmapToggle(event) {
-            const checkbox = event.target;
-            const name = checkbox.dataset.name;
-            const keyword = checkbox.dataset.keyword;
-
-            if (checkbox.checked) {
-                if (heatmapLayers[name]) {
-                    heatmapLayers[name].show();
-                } else {
-                    await createAndShowHeatmap(name, keyword);
-                }
-            } else {
-                if (heatmapLayers[name]) {
-                    heatmapLayers[name].hide();
-                }
+        async function toggleMonitoringAreas() {
+            if (areMonitoringAreasVisible) {
+                map.remove(monitoringAreaOverlays);
+                areMonitoringAreasVisible = false;
+                return;
             }
-        }
-
-        // *** 已更新此函数 ***
-        async function createAndShowHeatmap(name, keyword) {
+            if (monitoringAreaOverlays.length > 0) {
+                map.add(monitoringAreaOverlays);
+                map.setFitView(monitoringAreaOverlays);
+                areMonitoringAreasVisible = true;
+                return;
+            }
             try {
-                const response = await fetch(`${backendUrl}/api/traffic/poi?city=北京&keywords=${encodeURIComponent(keyword)}`);
-                const data = await response.json();
-                
-                if (data.status === '1' && data.pois && data.pois.length > 0) {
-                    
-                    const validPois = data.pois.filter(poi => 
-                        poi.location && typeof poi.location === 'string' && poi.location.includes(',')
-                    );
-
-                    if (validPois.length === 0) {
-                        console.warn(`关键词 "${name}" 的查询结果中没有有效的坐标数据。`);
-                        return; 
-                    }
-
-                    const heatMapData = validPois.map(poi => {
-                        const [lng, lat] = poi.location.split(',');
-                        return { 
-                            lng: parseFloat(lng), 
-                            lat: parseFloat(lat), 
-                            count: Math.floor(Math.random() * 100) + 1 
-                        };
-                    });
-
-                    // --- 更新的热力图配置 ---
-                    const heatMap = new AMap.HeatMap(map, {
-                        // 1. 增大半径，让热点能够连接成片
-                        radius: 50, 
-                        // 2. 增加模糊度，让边缘过渡更平滑
-                        blur: 0.9,
-                        opacity: [0, 0.85],
-                        // 3. 添加一个美观的颜色梯度
-                        gradient: {
-                            0.5: 'blue',
-                            0.65: 'rgb(117,211,248)',
-                            0.7: 'rgb(0, 255, 0)',
-                            0.9: '#ffea00',
-                            1.0: 'red'
+                const promises = TARGET_DISTRICTS.map(district => fetch(`${backendUrl}/api/district/bounds?district=${district}`).then(res => res.ok ? res.json() : { status: '0', error: `Failed to fetch ${district}` }));
+                const results = await Promise.all(promises);
+                monitoringAreaOverlays.length = 0;
+                results.forEach((data, index) => {
+                    if (data.status === '1' && data.polyline) {
+                        const color = DISTRICT_COLORS[index];
+                        const paths = parsePolyline(data.polyline);
+                        for (const path of paths) {
+                            if (path.length > 0) {
+                                monitoringAreaOverlays.push(new AMap.Polygon({ path, strokeColor: color, strokeWeight: 2, strokeOpacity: 0.8, fillColor: color, fillOpacity: 0.2, zIndex: 10 }));
+                            }
                         }
-                    });
-                    // --- 配置结束 ---
-
-                    heatMap.setDataSet({ data: heatMapData, max: 100 });
-                    
-                    heatmapLayers[name] = heatMap;
-                    console.log(`关于 "${name}" 的热力图已加载并显示`);
-                } else {
-                    console.warn(`获取 "${name}" 的热力图数据为空: ${data.info}`);
+                    } else {
+                        console.error(`获取 [${TARGET_DISTRICTS[index]}] 边界失败:`, data.error || 'API返回空数据');
+                    }
+                });
+                if (monitoringAreaOverlays.length > 0) {
+                    map.add(monitoringAreaOverlays);
+                    map.setFitView(monitoringAreaOverlays);
+                    areMonitoringAreasVisible = true;
                 }
             } catch (error) {
-                console.error(`获取 "${name}" 的POI数据失败:`, error);
-                alert(`网络错误，无法获取 "${name}" 的热力图数据`);
-                document.querySelector(`input[data-name="${name}"]`).checked = false;
+                console.error("加载监控区域时发生严重错误:", error);
             }
         }
 
-        function drawTrajectory() {
-            if (trajectoryLine) map.remove(trajectoryLine);
-            const path = [
-                [116.321354, 39.896093], [116.33, 39.895], [116.35, 39.89],
-                [116.37, 39.88], [116.377477, 39.865185]
-            ];
-            trajectoryLine = new AMap.Polyline({
-                path: path, strokeColor: "#3366FF", strokeOpacity: 1, strokeWeight: 6,
-                strokeStyle: "solid", zIndex: 50,
-            });
-            map.add(trajectoryLine);
-            map.setFitView(trajectoryLine);
-        }
-        
-        function clearAll() {
-            for (const name in heatmapLayers) {
-                if (heatmapLayers[name]) {
-                    heatmapLayers[name].hide();
+        function parsePolyline(polylineStr) {
+            const allPaths = [];
+            if (!polylineStr) return allPaths;
+            const landmassStrings = polylineStr.split('|');
+            for (const landmassStr of landmassStrings) {
+                const pointStrings = landmassStr.split(';');
+                const path = [];
+                for (const pointStr of pointStrings) {
+                    const lngLat = pointStr.split(',');
+                    if (lngLat.length === 2) {
+                        path.push(new AMap.LngLat(parseFloat(lngLat[0]), parseFloat(lngLat[1])));
+                    }
+                }
+                if (path.length > 0) {
+                    allPaths.push(path);
                 }
             }
-            document.querySelectorAll('#heatmap-options input[type="checkbox"]').forEach(checkbox => {
-                checkbox.checked = false;
-            });
+            return allPaths;
+        }
 
-            if (trajectoryLine) {
-                map.remove(trajectoryLine);
-                trajectoryLine = null;
+        // --- 路径规划相关函数 ---
+        
+        function setupAutocomplete() {
+            const startInput = document.getElementById('start-point-input');
+            const endInput = document.getElementById('end-point-input');
+
+            const startAutocomplete = new AMap.AutoComplete({ input: startInput, city: '北京' });
+            const endAutocomplete = new AMap.AutoComplete({ input: endInput, city: '北京' });
+
+            startAutocomplete.on('select', (e) => {
+                if (e.poi && e.poi.location) {
+                    routeLocations.start = e.poi.location;
+                    startInput.value = e.poi.name;
+                }
+            });
+            endAutocomplete.on('select', (e) => {
+                if (e.poi && e.poi.location) {
+                    routeLocations.end = e.poi.location;
+                    endInput.value = e.poi.name;
+                }
+            });
+        }
+
+        function addWaypointInput() {
+            waypointCounter++;
+            const waypointId = `waypoint-${waypointCounter}`;
+            
+            const container = document.getElementById('waypoints-container');
+            const newWaypointDiv = document.createElement('div');
+            newWaypointDiv.className = 'flex items-center gap-2 mt-2';
+            newWaypointDiv.innerHTML = `<input type="text" id="${waypointId}" class="input-field" placeholder="搜索途经点 ${waypointCounter}"><button class="btn btn-secondary text-sm p-2" onclick="removeWaypoint(this)">-</button>`;
+            container.appendChild(newWaypointDiv);
+            
+            const waypointInput = document.getElementById(waypointId);
+            const waypointAutocomplete = new AMap.AutoComplete({ input: waypointInput, city: '北京' });
+            waypointAutocomplete.on('select', (e) => {
+                if(e.poi && e.poi.location) {
+                    let waypoint = routeLocations.waypoints.find(wp => wp.id === waypointId);
+                    if (!waypoint) {
+                        waypoint = { id: waypointId, location: null };
+                        routeLocations.waypoints.push(waypoint);
+                    }
+                    waypoint.location = e.poi.location;
+                    waypointInput.value = e.poi.name;
+                }
+            });
+        }
+
+        function removeWaypoint(button) {
+            const divToRemove = button.parentElement;
+            const inputId = divToRemove.querySelector('input').id;
+            routeLocations.waypoints = routeLocations.waypoints.filter(wp => wp.id !== inputId);
+            divToRemove.remove();
+        }
+
+        async function planRoute() {
+            if (routeOverlays.length > 0) {
+                map.remove(routeOverlays);
+                routeOverlays.length = 0;
             }
-            console.log('所有覆盖物已清除');
+
+            if (!routeLocations.start || !routeLocations.end) {
+                alert('请通过搜索并从下拉列表中选择有效的起点和终点！');
+                return;
+            }
+
+            const origin = `${routeLocations.start.lng},${routeLocations.start.lat}`;
+            const destination = `${routeLocations.end.lng},${routeLocations.end.lat}`;
+            const waypoints = routeLocations.waypoints
+                .filter(wp => wp.location)
+                .map(wp => `${wp.location.lng},${wp.location.lat}`)
+                .join(';');
+            
+            try {
+                const response = await fetch(`${backendUrl}/api/route/driving?origin=${origin}&destination=${destination}&waypoints=${waypoints}`);
+                const data = await response.json();
+
+                if (data.status === '1' && data.polyline) {
+                    const path = parsePolyline(data.polyline);
+                    const routeLine = new AMap.Polyline({ path: path[0], strokeColor: "#3366FF", strokeOpacity: 0.8, strokeWeight: 8, showDir: true, zIndex: 50 });
+                    map.add(routeLine);
+                    routeOverlays.push(routeLine);
+                    
+                    const startMarker = new AMap.Marker({ position: routeLocations.start, icon: 'https://a.amap.com/jsapi_demos/static/demo-center/icons/dir-marker.png', offset: new AMap.Pixel(-13, -30) });
+                    const endMarker = new AMap.Marker({ position: routeLocations.end, icon: 'https://a.amap.com/jsapi_demos/static/demo-center/icons/dir-marker-end.png', offset: new AMap.Pixel(-13, -30) });
+                    map.add(startMarker);
+                    map.add(endMarker);
+                    routeOverlays.push(startMarker, endMarker);
+                    map.setFitView(routeOverlays);
+
+                    const distance = (data.distance / 1000).toFixed(2);
+                    const duration = Math.round(data.duration / 60);
+                    const infoWindow = new AMap.InfoWindow({ content: `<div><p>距离: ${distance} 公里</p><p>预计时间: ${duration} 分钟</p></div>`, offset: new AMap.Pixel(0, -30) });
+                    infoWindow.open(map, routeLocations.start);
+                    routeOverlays.push(infoWindow);
+                } else {
+                    alert('路径规划失败: ' + (data.reason || '未知错误'));
+                }
+            } catch (error) {
+                console.error("路径规划请求失败:", error);
+                alert("网络错误，无法进行路径规划。");
+            }
+        }
+
+        function clearAll() {
+            if (areMonitoringAreasVisible) {
+                map.remove(monitoringAreaOverlays);
+                areMonitoringAreasVisible = false;
+            }
+            if (routeOverlays.length > 0) {
+                map.remove(routeOverlays);
+                routeOverlays.length = 0;
+            }
         }
 
         // --- 事件绑定 ---
         document.getElementById('toggle-traffic-layer').addEventListener('click', toggleTrafficLayer);
-        document.getElementById('draw-trajectory').addEventListener('click', drawTrajectory);
+        document.getElementById('toggle-monitoring-areas').addEventListener('click', toggleMonitoringAreas);
+        document.getElementById('add-waypoint-btn').addEventListener('click', addWaypointInput);
+        document.getElementById('plan-route-btn').addEventListener('click', planRoute);
         document.getElementById('clear-all').addEventListener('click', clearAll);
 
         // --- 主程序入口 ---
         function initializeApp() {
             initMap();
             initCharts();
-            initHeatmapOptions();
         }
 
         async function loadAmapScript() {
             try {
+                console.log("正在从后端获取API Key...");
                 const response = await fetch(`${backendUrl}/api/config/amap-js-key`);
                 if (!response.ok) throw new Error(`获取地图API Key失败: ${response.statusText}`);
-                
                 const data = await response.json();
                 const amapJsKey = data.key;
 
                 const script = document.createElement('script');
                 script.type = 'text/javascript';
-                script.src = `https://webapi.amap.com/maps?v=2.0&key=${amapJsKey}&plugin=AMap.HeatMap&callback=initializeApp`;
-                script.onerror = () => {
-                    alert('高德地图脚本加载失败，请检查网络或联系管理员。');
-                };
+                script.src = `https://webapi.amap.com/maps?v=2.0&key=${amapJsKey}&callback=initializeApp`;
+                script.onerror = () => { alert('高德地图脚本加载失败，请检查网络或联系管理员。'); };
                 document.head.appendChild(script);
-
             } catch (error) {
                 console.error('加载地图脚本时出错:', error);
                 alert('无法加载地图，请刷新页面重试。');

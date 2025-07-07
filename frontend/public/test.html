@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[调试专用] 城市交通时空特征可视化大屏</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #020d24; color: #c0c0c0; }
+        .card { background-color: rgba(10, 25, 47, 0.8); border: 1px solid #1e3a5f; border-radius: 0.5rem; padding: 1rem; }
+        .main-title { font-size: 2.5rem; font-weight: bold; color: #ffffff; text-align: center; padding: 1rem 0; }
+        #map-container { width: 100%; height: 100%; border-radius: 0.5rem; }
+        .input-field { background-color: #1a202c; border: 1px solid #2d3748; color: white; border-radius: 0.375rem; padding: 0.5rem; width: 100%; }
+        .amap-sug-result { background-color: #1a202c !important; border: 1px solid #4299e1 !important; color: #c0c0c0 !important; z-index: 9999 !important; }
+        .amap-sug-result .sug-item { color: #c0c0c0 !important; border-bottom: 1px solid #2d3748 !important; }
+        .amap-sug-result .sug-item:hover, .amap-sug-result .sug-item.selected { background-color: #2d3748 !important; }
+    </style>
+</head>
+<body class="p-4">
+    <h1 class="main-title">[调试专用] 城市交通时空特征可视化大屏</h1>
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-4 h-[calc(100vh-120px)]">
+        
+        <div class="lg:col-span-1 flex flex-col gap-4">
+            <div class="card">
+                <h2 class="text-xl font-bold text-white mb-2">路径规划</h2>
+                <div class="flex flex-col gap-3">
+                    <div>
+                        <label class="text-sm font-medium">起点</label>
+                        <input type="text" id="start-point-input" class="input-field mt-1" placeholder="搜索起点位置">
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium">终点</label>
+                        <input type="text" id="end-point-input" class="input-field mt-1" placeholder="搜索终点位置">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-3 card p-2">
+            <div id="map-container"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 全局变量 ---
+        const backendUrl = 'http://localhost:5001';
+        let map;
+
+        // --- 地图初始化 ---
+        function initMap() {
+            console.log("Step 3: initMap() 函数开始执行。");
+            try {
+                map = new AMap.Map('map-container', {
+                    zoom: 10,
+                    center: [116.407428, 39.90423],
+                    viewMode: '3D',
+                    mapStyle: 'amap://styles/darkblue',
+                });
+                console.log("Step 4: 地图实例 (map) 创建成功。", map);
+
+                // --- 已更新：在地图加载完成后，再通过 AMap.plugin 加载插件 ---
+                map.on('complete', function(){
+                    console.log("Step 5: 地图 'complete' 事件触发，地图已完全加载。");
+                    // 使用 AMap.plugin 确保插件已准备好
+                    AMap.plugin('AMap.AutoComplete', function(){
+                        console.log("Step 6: AMap.AutoComplete 插件已加载完成。");
+                        setupAutocomplete();
+                    });
+                });
+
+            } catch (error) {
+                console.error("在 new AMap.Map() 期间发生严重错误:", error);
+            }
+        }
+
+        // --- 路径规划相关函数 ---
+        function setupAutocomplete() {
+            console.log("Step 7: setupAutocomplete() 函数开始执行。");
+            try {
+                const startInput = document.getElementById('start-point-input');
+                const endInput = document.getElementById('end-point-input');
+
+                const startAutocomplete = new AMap.AutoComplete({ input: startInput, city: '北京' });
+                const endAutocomplete = new AMap.AutoComplete({ input: endInput, city: '北京' });
+
+                startAutocomplete.on('complete', function(result){
+                    console.log("--- [诊断日志] 起点输入提示查询完成 ---");
+                    console.log("返回的原始结果:", result);
+                });
+
+                startAutocomplete.on('select', (e) => {
+                    console.log("--- [诊断日志] 起点已选择 ---");
+                    console.log("选择的POI对象:", e.poi);
+                });
+                
+                endAutocomplete.on('select', (e) => {
+                    console.log("--- [诊断日志] 终点已选择 ---");
+                    console.log("选择的POI对象:", e.poi);
+                });
+
+                console.log("Step 8: 自动完成插件已成功绑定。");
+
+            } catch (error) {
+                console.error("在 setupAutocomplete() 期间发生严重错误:", error);
+            }
+        }
+
+        // --- 主程序入口 ---
+        function initializeApp() {
+            console.log("Step 2: 高德地图脚本回调函数 initializeApp() 被调用。");
+            initMap();
+        }
+
+        async function loadAmapScript() {
+            try {
+                console.log("Step 1: 页面加载完成，开始从后端获取API Key。");
+                const response = await fetch(`${backendUrl}/api/config/amap-js-key`);
+                if (!response.ok) throw new Error(`获取地图API Key失败: ${response.statusText}`);
+                
+                const data = await response.json();
+                const amapJsKey = data.key;
+
+                const script = document.createElement('script');
+                script.type = 'text/javascript';
+                // --- 已更新：从 URL 中移除 plugin 参数，我们将手动加载它 ---
+                script.src = `https://webapi.amap.com/maps?v=2.0&key=${amapJsKey}&callback=initializeApp`;
+                script.onerror = () => { alert('高德地图脚本加载失败，请检查网络或联系管理员。'); };
+                document.head.appendChild(script);
+
+            } catch (error) {
+                console.error('加载地图脚本时出错:', error);
+                alert('无法加载地图，请刷新页面重试。');
+            }
+        }
+
+        window.onload = loadAmapScript;
+    </script>
+</body>
+</html>
