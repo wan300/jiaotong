@@ -9,6 +9,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../core/models/user'); // 路径已更新为小写
 
+
 // @route   POST api/auth/register
 // @desc    注册新用户
 // @access  Public

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>城市交通时空特征可视化大屏</title>
+    <!-- 引入Tailwind CSS以快速构建美观的布局 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入ECharts图表库 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        /* 自定义样式，美化滚动条和背景 */
+        body {
+            background-color: #020d24; /* 深蓝色背景 */
+            color: #c0c0c0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        /* 卡片样式 */
+        .card {
+            background-color: rgba(10, 25, 47, 0.8);
+            border: 1px solid #1e3a5f;
+            backdrop-filter: blur(5px);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        /* 大屏标题样式 */
+        .main-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 0 0 10px #00aaff, 0 0 20px #00aaff;
+            text-align: center;
+            padding: 1rem 0;
+        }
+        /* 地图容器样式 */
+        #map-container {
+            width: 100%;
+            height: 100%;
+            border-radius: 0.5rem;
+        }
+        /* ECharts图表容器 */
+        .chart-container {
+            width: 100%;
+            height: 250px; /* 固定高度 */
+        }
+        /* 自定义复选框样式 */
+        .custom-checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            background-color: #1a202c;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid #2d3748;
+            transition: all 0.2s ease-in-out;
+        }
+        .custom-checkbox-label:hover {
+            border-color: #4299e1;
+        }
+        .custom-checkbox {
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #4a5568;
+            border-radius: 0.25rem;
+            margin-right: 0.5rem;
+            position: relative;
+            top: 2px;
+        }
+        .custom-checkbox:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .custom-checkbox:checked::after {
+            content: '✔';
+            color: white;
+            font-size: 0.8rem;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        /* 按钮样式 */
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-secondary {
+            background-color: #4a5568;
+        }
+        .btn-secondary:hover {
+            background-color: #2d3748;
+        }
+    </style>
+</head>
+<body class="p-4">
+    <h1 class="main-title">城市交通时空特征可视化大屏</h1>
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-4 h-[calc(100vh-120px)]">
+        
+        <!-- 左侧栏 -->
+        <div class="lg:col-span-1 flex flex-col gap-4">
+            <div class="card">
+                <h2 class="text-xl font-bold text-white mb-2">控制面板</h2>
+                <div class="flex flex-col gap-4">
+                    <button id="toggle-traffic-layer" class="btn">显示/隐藏实时路况</button>
+                    
+                    <!-- 更新: 热力图叠加分析模块 -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-white mb-2">热力图叠加分析:</h3>
+                        <div id="heatmap-options" class="grid grid-cols-2 gap-2">
+                            <!-- 复选框将由JS动态生成 -->
+                        </div>
+                    </div>
+                    
+                    <button id="draw-trajectory" class="btn btn-secondary">绘制模拟轨迹</button>
+                    <button id="clear-all" class="btn btn-secondary">清除所有覆盖物</button>
+                </div>
+            </div>
+            <div class="card flex-grow">
+                <h2 class="text-xl font-bold text-white mb-2">周客流量分布 (模拟数据)</h2>
+                <div id="weekly-flow-chart" class="chart-container"></div>
+            </div>
+        </div>
+
+        <!-- 中间地图 -->
+        <div class="lg:col-span-3 card p-2">
+            <div id="map-container"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 全局变量 ---
+        const backendUrl = 'http://localhost:5001'; // 你的后端地址
+        let map;
+        let trafficLayer;
+        let trajectoryLine;
+        let isTrafficLayerVisible = false;
+
+        const heatmapLayers = {}; 
+
+        const poiCategories = [
+            { name: '购物', keyword: '商场|购物中心|超市' },
+            { name: '教育', keyword: '大学|中学|小学' },
+            { name: '医疗', keyword: '医院|诊所' },
+            { name: '交通', keyword: '地铁站|公交站' },
+            { name: '餐饮', keyword: '餐厅|饭店|美食' },
+            { name: '公司', keyword: '公司|企业|科技园' }
+        ];
+
+        // --- 地图初始化 ---
+        function initMap() {
+            map = new AMap.Map('map-container', {
+                zoom: 12, center: [116.397428, 39.90923],
+                viewMode: '3D', mapStyle: 'amap://styles/darkblue',
+            });
+            trafficLayer = new AMap.TileLayer.Traffic({ zIndex: 10, autoRefresh: true });
+            map.add(trafficLayer);
+            trafficLayer.hide();
+        }
+
+        // --- ECharts图表初始化 ---
+        function initCharts() {
+            const weeklyFlowChart = echarts.init(document.getElementById('weekly-flow-chart'));
+            const option = {
+                tooltip: { trigger: 'axis' },
+                xAxis: {
+                    type: 'category',
+                    data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                    axisLine: { lineStyle: { color: '#8392A2' } },
+                },
+                yAxis: {
+                    type: 'value',
+                    name: '客流量 (万人次)',
+                    axisLine: { lineStyle: { color: '#8392A2' } },
+                    splitLine: { lineStyle: { color: 'rgba(131, 146, 162, 0.2)' } },
+                },
+                series: [{
+                    data: [120, 132, 101, 134, 150, 230, 210],
+                    type: 'line',
+                    smooth: true,
+                    itemStyle: { color: '#00aaff' },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                            offset: 0,
+                            color: 'rgba(0, 170, 255, 0.5)'
+                        }, {
+                            offset: 1,
+                            color: 'rgba(0, 170, 255, 0)'
+                        }])
+                    }
+                }],
+                grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true }
+            };
+            weeklyFlowChart.setOption(option);
+        }
+
+        // --- 动态生成热力图选项 ---
+        function initHeatmapOptions() {
+            const container = document.getElementById('heatmap-options');
+            poiCategories.forEach(category => {
+                const label = document.createElement('label');
+                label.className = 'custom-checkbox-label';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'custom-checkbox';
+                checkbox.dataset.keyword = category.keyword;
+                checkbox.dataset.name = category.name;
+                checkbox.addEventListener('change', handleHeatmapToggle);
+
+                const text = document.createElement('span');
+                text.textContent = category.name;
+
+                label.appendChild(checkbox);
+                label.appendChild(text);
+                container.appendChild(label);
+            });
+        }
+
+        // --- 功能函数 ---
+
+        function toggleTrafficLayer() {
+            if (isTrafficLayerVisible) trafficLayer.hide();
+            else trafficLayer.show();
+            isTrafficLayerVisible = !isTrafficLayerVisible;
+        }
+
+        async function handleHeatmapToggle(event) {
+            const checkbox = event.target;
+            const name = checkbox.dataset.name;
+            const keyword = checkbox.dataset.keyword;
+
+            if (checkbox.checked) {
+                if (heatmapLayers[name]) {
+                    heatmapLayers[name].show();
+                } else {
+                    await createAndShowHeatmap(name, keyword);
+                }
+            } else {
+                if (heatmapLayers[name]) {
+                    heatmapLayers[name].hide();
+                }
+            }
+        }
+
+        // *** 已更新此函数 ***
+        async function createAndShowHeatmap(name, keyword) {
+            try {
+                const response = await fetch(`${backendUrl}/api/traffic/poi?city=北京&keywords=${encodeURIComponent(keyword)}`);
+                const data = await response.json();
+                
+                if (data.status === '1' && data.pois && data.pois.length > 0) {
+                    
+                    const validPois = data.pois.filter(poi => 
+                        poi.location && typeof poi.location === 'string' && poi.location.includes(',')
+                    );
+
+                    if (validPois.length === 0) {
+                        console.warn(`关键词 "${name}" 的查询结果中没有有效的坐标数据。`);
+                        return; 
+                    }
+
+                    const heatMapData = validPois.map(poi => {
+                        const [lng, lat] = poi.location.split(',');
+                        return { 
+                            lng: parseFloat(lng), 
+                            lat: parseFloat(lat), 
+                            count: Math.floor(Math.random() * 100) + 1 
+                        };
+                    });
+
+                    // --- 更新的热力图配置 ---
+                    const heatMap = new AMap.HeatMap(map, {
+                        // 1. 增大半径，让热点能够连接成片
+                        radius: 50, 
+                        // 2. 增加模糊度，让边缘过渡更平滑
+                        blur: 0.9,
+                        opacity: [0, 0.85],
+                        // 3. 添加一个美观的颜色梯度
+                        gradient: {
+                            0.5: 'blue',
+                            0.65: 'rgb(117,211,248)',
+                            0.7: 'rgb(0, 255, 0)',
+                            0.9: '#ffea00',
+                            1.0: 'red'
+                        }
+                    });
+                    // --- 配置结束 ---
+
+                    heatMap.setDataSet({ data: heatMapData, max: 100 });
+                    
+                    heatmapLayers[name] = heatMap;
+                    console.log(`关于 "${name}" 的热力图已加载并显示`);
+                } else {
+                    console.warn(`获取 "${name}" 的热力图数据为空: ${data.info}`);
+                }
+            } catch (error) {
+                console.error(`获取 "${name}" 的POI数据失败:`, error);
+                alert(`网络错误，无法获取 "${name}" 的热力图数据`);
+                document.querySelector(`input[data-name="${name}"]`).checked = false;
+            }
+        }
+
+        function drawTrajectory() {
+            if (trajectoryLine) map.remove(trajectoryLine);
+            const path = [
+                [116.321354, 39.896093], [116.33, 39.895], [116.35, 39.89],
+                [116.37, 39.88], [116.377477, 39.865185]
+            ];
+            trajectoryLine = new AMap.Polyline({
+                path: path, strokeColor: "#3366FF", strokeOpacity: 1, strokeWeight: 6,
+                strokeStyle: "solid", zIndex: 50,
+            });
+            map.add(trajectoryLine);
+            map.setFitView(trajectoryLine);
+        }
+        
+        function clearAll() {
+            for (const name in heatmapLayers) {
+                if (heatmapLayers[name]) {
+                    heatmapLayers[name].hide();
+                }
+            }
+            document.querySelectorAll('#heatmap-options input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+
+            if (trajectoryLine) {
+                map.remove(trajectoryLine);
+                trajectoryLine = null;
+            }
+            console.log('所有覆盖物已清除');
+        }
+
+        // --- 事件绑定 ---
+        document.getElementById('toggle-traffic-layer').addEventListener('click', toggleTrafficLayer);
+        document.getElementById('draw-trajectory').addEventListener('click', drawTrajectory);
+        document.getElementById('clear-all').addEventListener('click', clearAll);
+
+        // --- 主程序入口 ---
+        function initializeApp() {
+            initMap();
+            initCharts();
+            initHeatmapOptions();
+        }
+
+        async function loadAmapScript() {
+            try {
+                const response = await fetch(`${backendUrl}/api/config/amap-js-key`);
+                if (!response.ok) throw new Error(`获取地图API Key失败: ${response.statusText}`);
+                
+                const data = await response.json();
+                const amapJsKey = data.key;
+
+                const script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.src = `https://webapi.amap.com/maps?v=2.0&key=${amapJsKey}&plugin=AMap.HeatMap&callback=initializeApp`;
+                script.onerror = () => {
+                    alert('高德地图脚本加载失败，请检查网络或联系管理员。');
+                };
+                document.head.appendChild(script);
+
+            } catch (error) {
+                console.error('加载地图脚本时出错:', error);
+                alert('无法加载地图，请刷新页面重试。');
+            }
+        }
+
+        window.onload = loadAmapScript;
+    </script>
+</body>
+</html>

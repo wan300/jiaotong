@@ -9,6 +9,8 @@ const db = require('./config/database');
 
 // 导入路由
 const authRoutes = require('./api/auth_controller');
+const trafficRoutes = require('./api/traffic_controller'); // <-- 新增: 导入交通路由
+const configRoutes = require('./api/config_controller'); 
 // ... 在这里导入其他路由
 
 // 测试数据库连接
@@ -22,8 +24,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 定义API路由
 app.use('/api/auth', authRoutes);
+app.use('/api/traffic', trafficRoutes); // <-- 新增: 使用交通路由
+app.use('/api/config', configRoutes);
 // ... 在这里使用其他路由
 
 // 根路由
@@ -37,5 +40,6 @@ db.sync()
     console.log('数据库模型已同步');
     const PORT = process.env.PORT || 5001;
     app.listen(PORT, () => console.log(`服务器已在端口 ${PORT} 上启动`));
+    
   })
   .catch(err => console.error('模型同步失败:', err));
