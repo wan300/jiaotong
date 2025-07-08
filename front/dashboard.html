@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统主页</title>
+    <link rel="stylesheet" href="dashboard.css"> </head>
+<body>
+    <header class="main-header">
+        <div class="logo">智能公路养护系统</div>
+        <div class="user-info-container">
+            <span id="loggedInUsername" class="username-display">用户名</span> <div class="dropdown-menu" id="userDropdown">
+                <a href="#" id="logoutBtn">退出登录</a> </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="feature-card left-card" id="roadHazardDetectionCard">
+            <h2>路面危害检测</h2>
+            <p>点击进入路面危害智能检测功能。</p>
+            </div>
+
+        <div class="feature-card right-card" id="cityTrafficVisualizationCard">
+            <h2>城市交通特征（Taxi）</h2>
+            <p>点击进入城市交通时空特征提取与可视化大屏。</p>
+            </div>
+    </main>
+
+    <script src="dashboard.js"></script> </body>
+</html>

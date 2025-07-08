@@ -1,0 +1,113 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* 头部样式 */
+.main-header {
+    background-color: #34495e;
+    color: white;
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* 用户信息容器 */
+.user-info-container {
+    position: relative;
+    cursor: pointer;
+}
+
+.username-display {
+    padding: 8px 12px;
+    border-radius: 5px;
+    background-color: #2c3e50;
+    transition: background-color 0.3s ease;
+}
+
+.username-display:hover {
+    background-color: #1a242f; /* 鼠标悬停时的反馈 */
+}
+
+/* 下拉菜单 */
+.dropdown-menu {
+    display: none; /* 默认隐藏 */
+    position: absolute;
+    top: 100%; /* 位于用户名下方 */
+    right: 0;
+    background-color: #fff;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    min-width: 120px;
+    z-index: 1000;
+    overflow: hidden; /* 防止内容溢出圆角 */
+}
+
+.dropdown-menu.show {
+    display: block; /* 显示下拉菜单 */
+}
+
+.dropdown-menu a {
+    color: #333;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f1f1f1;
+}
+
+/* 主内容区域 */
+.main-content {
+    flex-grow: 1; /* 占据剩余空间 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    gap: 30px; /* 两个卡片之间的间距 */
+    flex-wrap: wrap; /* 允许换行，适应小屏幕 */
+}
+
+.feature-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+    width: 380px; /* 卡片宽度 */
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px); /* 鼠标悬停时的上浮效果 */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.feature-card h2 {
+    color: #2c3e50;
+    margin-top: 0;
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
+.feature-card p {
+    color: #666;
+    font-size: 16px;
+    line-height: 1.6;
+}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录界面</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="tabs">
+            <button id="passwordLoginBtn" class="tab-button active">密码/邮箱登录</button>
+            <button id="faceLoginBtn" class="tab-button">人脸识别登录</button>
+        </div>
+
+        <div id="passwordLoginForm" class="login-form active">
+            <h2>密码/邮箱登录</h2>
+            <div class="input-group">
+                <label for="usernameEmail">用户名/邮箱:</label>
+                <input type="text" id="usernameEmail" placeholder="请输入用户名或邮箱">
+            </div>
+            <div class="input-group">
+                <label for="password">密码:</label>
+                <input type="password" id="password" placeholder="请输入密码">
+            </div>
+            <button id="loginSubmitBtn" class="submit-button">登录</button>
+        </div>
+
+        <div id="faceRecognitionForm" class="login-form">
+            <h2>人脸识别登录</h2>
+            <div class="face-recognition-area">
+                <p>请正对摄像头进行人脸识别...</p>
+                <button id="startFaceRecognition" class="action-button">启动摄像头</button>
+                <p class="recognition-status" id="faceRecognitionStatus">等待识别...</p>
+            </div>
+            <button id="faceLoginSubmitBtn" class="submit-button">人脸登录</button>
+        </div>
+
+        <div class="separator"></div>
+
+        <button id="registerBtn" class="register-button">注册</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
