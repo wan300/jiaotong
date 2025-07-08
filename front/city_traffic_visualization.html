@@ -3,18 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>城市交通特征可视化大屏</title>
-    <style>
-        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #f0f8ff; color: #333; }
-        h1 { font-size: 3em; color: #2c3e50; }
-        p { font-size: 1.2em; color: #666; }
-        .back-btn { margin-top: 30px; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; }
-        .back-btn:hover { background-color: #0056b3; }
-    </style>
-</head>
+    <title>城市交通特征可视化</title>
+    <link rel="stylesheet" href="city_traffic_visualization.css"> </head>
 <body>
-    <h1>城市交通特征可视化大屏主界面</h1>
-    <p>这里将展示城市交通数据的可视化内容。</p>
-    <a href="dashboard.html" class="back-btn">返回主页</a>
-</body>
+    <header class="main-header">
+        <div class="logo">智能公路养护系统</div>
+        <div class="user-info-container">
+            <span id="loggedInUsername" class="username-display">用户名</span> <div class="dropdown-menu" id="userDropdown">
+                <a href="dashboard.html" class="back-to-dashboard">返回主页</a> <a href="#" id="logoutBtn">退出登录</a> </div>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <aside class="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="#" class="nav-item active" data-content-id="homePageContent">首页</a></li>
+                    <li><a href="#" class="nav-item" data-content-id="populationMapContent">人口分布图</a></li>
+                    <li><a href="#" class="nav-item" data-content-id="passengerCountContent">载客数量变化图</a></li>
+                    <li><a href="#" class="nav-item" data-content-id="roadSpeedContent">道路速度变化图</a></li>
+                    </ul>
+            </nav>
+        </aside>
+
+        <main class="content-area">
+            <section id="homePageContent" class="content-section active">
+                <h1>首页 - 交通数据查询</h1>
+                <div class="query-section">
+                    <h3>UTC 时间查询</h3>
+                    <div class="input-group">
+                        <input type="text" id="utcTimeInput" placeholder="请输入UTC时间">
+                        <button class="query-button" data-query-type="utcTime">查询</button>
+                    </div>
+                </div>
+
+                <div class="query-section">
+                    <h3>车辆 GPS 查询</h3>
+                    <div class="input-group">
+                        <input type="text" id="vehicleGpsInput" placeholder="请输入车辆ID或GPS信息">
+                        <button class="query-button" data-query-type="vehicleGps">查询</button>
+                    </div>
+                </div>
+
+                <div class="query-section">
+                    <h3>车辆轨迹查询</h3>
+                    <div class="input-group">
+                        <input type="text" id="vehicleTrajectoryInput" placeholder="请输入车辆ID或时间范围">
+                        <button class="query-button" data-query-type="vehicleTrajectory">查询</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="populationMapContent" class="content-section">
+                <h1>人口分布图</h1>
+                <p>这里将展示人口分布图。</p>
+            </section>
+
+            <section id="passengerCountContent" class="content-section">
+                <h1>载客数量变化图</h1>
+                <p>这里将展示载客数量变化图。</p>
+            </section>
+
+            <section id="roadSpeedContent" class="content-section">
+                <h1>道路速度变化图</h1>
+                <p>这里将展示道路速度变化图。</p>
+            </section>
+
+            <div class="image-output-area">
+                <h2>可视化结果输出</h2>
+                <img id="visualizationImage" src="" alt="可视化结果" style="display: none;">
+                <p id="imagePlaceholder">这里将显示查询或分析结果图。</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="city_traffic_visualization.js"></script> </body>
 </html>

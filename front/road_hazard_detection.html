@@ -4,17 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>路面危害检测</title>
-    <style>
-        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #f0f8ff; color: #333; }
-        h1 { font-size: 3em; color: #2c3e50; }
-        p { font-size: 1.2em; color: #666; }
-        .back-btn { margin-top: 30px; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; }
-        .back-btn:hover { background-color: #0056b3; }
-    </style>
-</head>
+    <link rel="stylesheet" href="road_hazard_detection.css"> </head>
 <body>
-    <h1>路面危害检测界面</h1>
-    <p>这里是路面危害检测功能的详细内容。</p>
-    <a href="dashboard.html" class="back-btn">返回主页</a>
-</body>
+    <header class="main-header">
+        <div class="logo">智能公路养护系统</div>
+        <div class="user-info-container">
+            <span id="loggedInUsername" class="username-display">用户名</span> <div class="dropdown-menu" id="userDropdown">
+                <a href="dashboard.html" class="back-to-dashboard">返回主页</a> <a href="#" id="logoutBtn">退出登录</a> </div>
+        </div>
+    </header>
+
+    <main class="detection-main-content">
+        <div class="upload-section">
+            <h2>上传巡检视频进行检测</h2>
+            <input type="file" id="videoUploadInput" accept="video/*" style="display: none;">
+            <button id="uploadButton" class="action-button">选择视频附件</button>
+            <p id="fileNameDisplay" class="file-name-display">未选择文件</p>
+        </div>
+
+        <div class="results-section">
+            <h2>检测结果概览</h2>
+            <div class="damage-info-container">
+                <p>纵向裂缝: <span id="longitudinalCrackCount">0</span> 处</p>
+                <p>横向裂缝: <span id="transverseCrackCount">0</span> 处</p>
+                <p>龟裂: <span id="alligatorCrackCount">0</span> 处</p>
+                <p>坑洼: <span id="potholeCount">0</span> 处</p>
+            </div>
+            <p class="status-message" id="detectionStatus">请上传视频进行检测...</p>
+        </div>
+
+        <div class="video-player-section">
+            <h2>视频播放</h2>
+            <video id="uploadedVideoPlayer" controls muted width="100%" height="auto">
+                您的浏览器不支持视频播放。
+            </video>
+            <p class="video-placeholder-text" id="videoPlaceholderText">视频将在此处播放</p>
+        </div>
+    </main>
+
+    <script src="road_hazard_detection.js"></script> </body>
 </html>

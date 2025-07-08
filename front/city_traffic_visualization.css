@@ -1,0 +1,228 @@
+/* 从 dashboard.css 或 road_hazard_detection.css 复制的通用头部样式 */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* 头部样式 */
+.main-header {
+    background-color: #34495e;
+    color: white;
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* 用户信息容器 */
+.user-info-container {
+    position: relative;
+    cursor: pointer;
+}
+
+.username-display {
+    padding: 8px 12px;
+    border-radius: 5px;
+    background-color: #2c3e50;
+    transition: background-color 0.3s ease;
+}
+
+.username-display:hover {
+    background-color: #1a242f; /* 鼠标悬停时的反馈 */
+}
+
+/* 下拉菜单 */
+.dropdown-menu {
+    display: none; /* 默认隐藏 */
+    position: absolute;
+    top: 100%; /* 位于用户名下方 */
+    right: 0;
+    background-color: #fff;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    min-width: 120px;
+    z-index: 1000;
+    overflow: hidden; /* 防止内容溢出圆角 */
+}
+
+.dropdown-menu.show {
+    display: block; /* 显示下拉菜单 */
+}
+
+.dropdown-menu a {
+    color: #333;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f1f1f1;
+}
+
+/* 页面主体布局 */
+.main-layout {
+    flex-grow: 1;
+    display: flex; /* 使用Flexbox布局侧边栏和主内容 */
+}
+
+/* 侧边栏样式 */
+.sidebar {
+    width: 250px;
+    background-color: #2c3e50;
+    padding: 20px 0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar li {
+    margin-bottom: 5px;
+}
+
+.sidebar .nav-item {
+    display: block;
+    padding: 15px 25px;
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    border-left: 5px solid transparent; /* 默认无边框 */
+}
+
+.sidebar .nav-item:hover {
+    background-color: #3b546d;
+}
+
+.sidebar .nav-item.active {
+    background-color: #007bff; /* 激活状态的背景色 */
+    border-left-color: #00bcd4; /* 激活状态的左侧边框 */
+    font-weight: bold;
+}
+
+/* 主内容区域样式 */
+.content-area {
+    flex-grow: 1;
+    padding: 30px;
+    background-color: #f4f7f6;
+    display: flex;
+    flex-direction: column;
+    gap: 30px; /* 各个 section 之间的间距 */
+}
+
+.content-section {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+    display: none; /* 默认隐藏所有内容区 */
+}
+
+.content-section.active {
+    display: block; /* 激活的内容区显示 */
+}
+
+.content-section h1 {
+    color: #34495e;
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 30px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+.content-section h3 {
+    color: #4a6a86;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    font-size: 22px;
+}
+
+/* 查询输入组 */
+.query-section .input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.query-section .input-group input[type="text"] {
+    flex-grow: 1; /* 输入框占据大部分空间 */
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.query-section .input-group input[type="text"]:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.query-button {
+    background-color: #28a745;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.query-button:hover {
+    background-color: #218838;
+}
+
+/* 图片输出区域 */
+.image-output-area {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+    text-align: center;
+    min-height: 400px; /* 确保有足够的高度 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px dashed #ccc;
+}
+
+.image-output-area h2 {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 20px;
+}
+
+.image-output-area img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* 保持图片比例 */
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.image-output-area #imagePlaceholder {
+    color: #888;
+    font-style: italic;
+    font-size: 18px;
+}
