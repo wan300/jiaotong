@@ -1,6 +1,8 @@
 // =================================================================
 // 文件: /backend/api/district_controller.js
 // 描述: 提供行政区划查询功能，主要用于获取区域边界。
+// 更新: 优化了错误处理。现在即使高德API未找到数据，后端也返回200状态码，
+//       但在JSON体中明确指出失败状态，并增加了详细日志。
 // =================================================================
 const express = require('express');
 const router = express.Router();
@@ -31,21 +33,30 @@ router.get('/bounds', async (req, res) => {
                 output: 'json'
             }
         });
+        
+        // 增加日志，方便调试
+        console.log(`高德API返回 [${district}] 的数据:`, JSON.stringify(amapResponse.data));
 
         // 检查并返回边界数据
-        if (amapResponse.data.status === '1' && amapResponse.data.districts.length > 0) {
-            // 返回第一个匹配区域的边界线坐标串
+        if (amapResponse.data.status === '1' && amapResponse.data.districts.length > 0 && amapResponse.data.districts[0].polyline) {
+            // 成功找到数据，返回status '1'
             res.json({
                 status: '1',
                 polyline: amapResponse.data.districts[0].polyline
             });
         } else {
-            res.status(404).json({ msg: `未找到 [${district}] 的边界数据` });
+            // 未找到数据，同样返回200 OK，但在body中指明status '0'
+            res.json({ 
+                status: '0', 
+                msg: `高德API未返回 [${district}] 的有效边界数据`,
+                reason: amapResponse.data.info 
+            });
         }
 
     } catch (error) {
-        console.error(`请求 [${district}] 边界数据时出错:`, error.message);
-        res.status(500).send('获取行政区划数据失败');
+        console.error(`请求 [${district}] 边界数据时发生严重错误:`, error.message);
+        // 服务器内部错误，返回500
+        res.status(500).json({ status: '0', msg: '获取行政区划数据时服务器出错' });
     }
 });
 
